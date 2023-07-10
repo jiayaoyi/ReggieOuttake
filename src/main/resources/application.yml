@@ -1,6 +1,10 @@
 server:
   port: 8080
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   application:
     name: reggie_take_out
   datasource:
@@ -17,3 +21,5 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+reggie:
+  path: /Users/kk/Desktop/pictures/
