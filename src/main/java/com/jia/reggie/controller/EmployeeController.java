@@ -6,9 +6,9 @@ import com.jia.reggie.common.R;
 import com.jia.reggie.entity.Employee;
 import com.jia.reggie.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -90,7 +90,6 @@ public class EmployeeController {
      */
     @GetMapping("/page")
     public R<Page<Employee>> page(int page, int pageSize, String name){
-        log.info("page{},pageSize{},name{}",page,pageSize,name);
         //分页构造器
         Page<Employee> pageInfo = new Page<>(page,pageSize);
         //条件构造器
