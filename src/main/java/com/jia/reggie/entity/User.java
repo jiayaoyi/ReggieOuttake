@@ -5,6 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 /**
  * 用户信息
+ *
+ * @author kk
  */
 @Data
 public class User implements Serializable {

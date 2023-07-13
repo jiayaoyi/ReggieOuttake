@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * 订单
+ *
+ * @author kk
  */
 @Data
 public class Orders implements Serializable {
@@ -38,7 +40,7 @@ public class Orders implements Serializable {
     private LocalDateTime checkoutTime;
 
 
-    //支付方式 1微信，2支付宝
+    //支付方式 1.微信，2.支付宝
     private Integer payMethod;
 
 

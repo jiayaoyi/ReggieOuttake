@@ -7,6 +7,9 @@ import com.jia.reggie.mapper.OrderMapper;
 import com.jia.reggie.service.OrderService;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author kk
+ */
 @Service
 public class OrderServiceImpl extends ServiceImpl<OrderMapper,Orders> implements OrderService {
 }

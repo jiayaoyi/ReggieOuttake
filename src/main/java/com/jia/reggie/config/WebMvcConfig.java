@@ -10,6 +10,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 
 import java.util.List;
 
+/**
+ * @author kk
+ */
 @Configuration
 @Slf4j
 public class WebMvcConfig extends WebMvcConfigurationSupport {

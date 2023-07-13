@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 分类控制器
+ *
+ * @author jiayaoyi
+ */
 @RestController
 @RequestMapping("/category")
 @Slf4j
@@ -32,7 +37,7 @@ public class CategoryController {
     }
 
     @GetMapping("/page")
-    public R<Page> page(int page, int pageSize) {
+    public R<Page<Category>> page(int page, int pageSize) {
         //分页构造器
         Page<Category> pageInfo = new Page<>(page, pageSize);
         //条件构造器
@@ -62,7 +67,7 @@ public class CategoryController {
      * 根据ID修改分类信息
      *
      * @param category 分类信息
-     * @return
+     * @return 消息体
      */
     @PutMapping
     public R<String> update(@RequestBody Category category) {
@@ -78,7 +83,7 @@ public class CategoryController {
      */
     @GetMapping("/list")
     public R<List<Category>> list(Category category) {
-        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(category.getType() != null, Category::getType, category.getType());
         queryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
         List<Category> categoryList = categoryService.list(queryWrapper);

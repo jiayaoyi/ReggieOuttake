@@ -11,6 +11,8 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
  * 全局异常处理
+ *
+ * @author jiayaoyi
  */
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
 @ResponseBody

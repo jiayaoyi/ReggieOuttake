@@ -5,6 +5,9 @@ import lombok.Data;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author jiayaoyi
+ */
 @Data
 public class R<T> {
 

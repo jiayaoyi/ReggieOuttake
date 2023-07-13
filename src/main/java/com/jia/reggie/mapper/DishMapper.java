@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 菜品mapper
+ *
+ * @author kk
  */
 @Mapper
 public interface DishMapper extends BaseMapper<Dish> {

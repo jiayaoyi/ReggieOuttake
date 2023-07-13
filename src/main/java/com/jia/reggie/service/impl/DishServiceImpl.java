@@ -2,7 +2,7 @@ package com.jia.reggie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jia.reggie.dto.DishDTO;
+import com.jia.reggie.dto.DishDto;
 import com.jia.reggie.entity.Dish;
 import com.jia.reggie.entity.DishFlavor;
 import com.jia.reggie.mapper.DishMapper;
@@ -23,7 +23,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     private DishFlavorService dishFlavorService;
 
     @Transactional
-    public void saveWithFlavor(DishDTO dishDTO) {
+    public void saveWithFlavor(DishDto dishDTO) {
         //保存菜品基本信息到菜品表
         this.save(dishDTO);
         //获得菜品id
@@ -37,9 +37,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         dishFlavorService.saveBatch(flavors);
     }
 
-    public DishDTO getWithFlavor(Long id) {
+    public DishDto getWithFlavor(Long id) {
         Dish dish = this.getById(id);
-        DishDTO dishDTO = new DishDTO();
+        DishDto dishDTO = new DishDto();
         BeanUtils.copyProperties(dish, dishDTO);
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DishFlavor::getDishId, dish.getId());
@@ -48,7 +48,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         return dishDTO;
     }
 
-    public void updateWithFlavor(DishDTO dishDTO) {
+    public void updateWithFlavor(DishDto dishDTO) {
         this.updateById(dishDTO);
         Long dishId = dishDTO.getId();
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper();

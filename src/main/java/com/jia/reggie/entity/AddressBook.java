@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 
 /**
  * 地址簿
+ *
+ * @author kk
  */
 @Data
 public class AddressBook implements Serializable {

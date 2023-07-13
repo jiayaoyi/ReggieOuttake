@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 
 /**
  * 订单明细
+ *
+ * @author kk
  */
 @Data
 public class OrderDetail implements Serializable {

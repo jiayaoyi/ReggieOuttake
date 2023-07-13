@@ -3,7 +3,7 @@ package com.jia.reggie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jia.reggie.common.CustomException;
-import com.jia.reggie.dto.SetmealDTO;
+import com.jia.reggie.dto.SetmealDto;
 import com.jia.reggie.entity.Setmeal;
 import com.jia.reggie.entity.SetmealDish;
 import com.jia.reggie.mapper.SetmealMapper;
@@ -17,13 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author kk
+ */
 @Service
 public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> implements SetmealService {
     @Autowired
     private SetmealDishService setmealDishService;
 
+    @Override
     @Transactional
-    public void saveWithDish(SetmealDTO setmealDTO) {
+    public void saveWithDish(SetmealDto setmealDTO) {
         this.save(setmealDTO);
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
         setmealDishes.stream().map((item) -> {
@@ -34,9 +38,9 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
     }
 
     @Override
-    public SetmealDTO getWithDish(Long id) {
+    public SetmealDto getWithDish(Long id) {
         Setmeal setmeal = this.getById(id);
-        SetmealDTO setmealDTO = new SetmealDTO();
+        SetmealDto setmealDTO = new SetmealDto();
         BeanUtils.copyProperties(setmeal, setmealDTO);
         LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SetmealDish::getSetmealId, id);
@@ -46,7 +50,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
     }
 
     @Override
-    public void updateWithDish(SetmealDTO setmealDTO) {
+    public void updateWithDish(SetmealDto setmealDTO) {
         this.updateById(setmealDTO);
         Long setmealId = setmealDTO.getId();
         LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
@@ -65,7 +69,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Setmeal::getId, ids);
         queryWrapper.eq(Setmeal::getStatus, 1);
-        int count = this.count(queryWrapper);
+        int count = (int) this.count(queryWrapper);
         if (count > 0) {
             throw new CustomException("套餐正在出售中，无法删除");
         }

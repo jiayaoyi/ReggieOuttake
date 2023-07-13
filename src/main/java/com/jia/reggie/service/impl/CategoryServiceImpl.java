@@ -13,6 +13,9 @@ import com.jia.reggie.service.SetmealService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author kk
+ */
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
@@ -21,6 +24,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Autowired
     private SetmealService setmealService;
+
     /**
      * 根据id删除分类
      * @param ids 菜品类型id
@@ -30,7 +34,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         LambdaQueryWrapper<Dish> dishLambdaQueryWrapper = new LambdaQueryWrapper<>();
         //添加查询条件
         dishLambdaQueryWrapper.eq(Dish::getCategoryId,ids);
-        int dishCount = dishService.count(dishLambdaQueryWrapper);
+        int dishCount = (int) dishService.count(dishLambdaQueryWrapper);
         //查询当前分类是否关联了菜品，如果已经关联直接抛出业务异常
         if (dishCount>0){
             throw new CustomException("当前分类下关联了菜品，不能删除");
@@ -38,7 +42,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         //查询当前分类是否关联了套餐，如果已经关联直接抛出业务异常
         LambdaQueryWrapper<Setmeal> setmealLambdaQueryWrapper = new LambdaQueryWrapper<>();
         setmealLambdaQueryWrapper.eq(Setmeal::getCategoryId,ids);
-        int setmealCount = setmealService.count(setmealLambdaQueryWrapper);
+        int setmealCount = (int) setmealService.count(setmealLambdaQueryWrapper);
         if (setmealCount>0){
             throw new CustomException("当前分类下关联了套餐，不能删除");
         }

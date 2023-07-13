@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * 购物车
+ *
+ * @author kk
  */
 @Data
 public class ShoppingCart implements Serializable {

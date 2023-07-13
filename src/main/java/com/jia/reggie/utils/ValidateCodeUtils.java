@@ -4,6 +4,8 @@ import java.util.Random;
 
 /**
  * 随机生成验证码工具类
+ *
+ * @author kk
  */
 public class ValidateCodeUtils {
     /**

@@ -6,6 +6,9 @@ import com.jia.reggie.mapper.UserMapper;
 import com.jia.reggie.service.UserService;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author kk
+ */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 }

@@ -6,6 +6,9 @@ import com.jia.reggie.mapper.ShoppingCartMapper;
 import com.jia.reggie.service.ShoppingCartService;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author kk
+ */
 @Service
 public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, ShoppingCart> implements ShoppingCartService {
 }

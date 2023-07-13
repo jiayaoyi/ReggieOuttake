@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
 
+/**
+ * @author kk
+ */
 @RestController
 @RequestMapping("/user")
 @Slf4j

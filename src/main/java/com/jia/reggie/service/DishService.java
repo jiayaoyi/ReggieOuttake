@@ -1,14 +1,17 @@
 package com.jia.reggie.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jia.reggie.dto.DishDTO;
+import com.jia.reggie.dto.DishDto;
 import com.jia.reggie.entity.Dish;
 
+/**
+ * @author kk
+ */
 public interface DishService extends IService<Dish> {
-    public void saveWithFlavor(DishDTO dishDTO);
+    void saveWithFlavor(DishDto dishDTO);
 
-    public DishDTO getWithFlavor(Long id);
+    DishDto getWithFlavor(Long id);
 
-    public void updateWithFlavor(DishDTO dishDTO);
+    void updateWithFlavor(DishDto dishDTO);
 
 }

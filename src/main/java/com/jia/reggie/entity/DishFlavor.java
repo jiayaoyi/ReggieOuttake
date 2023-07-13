@@ -8,7 +8,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
-菜品口味
+ * 菜品口味
+ *
+ * @author kk
  */
 @Data
 public class DishFlavor implements Serializable {

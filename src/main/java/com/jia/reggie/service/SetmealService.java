@@ -1,17 +1,20 @@
 package com.jia.reggie.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.jia.reggie.dto.SetmealDTO;
+import com.jia.reggie.dto.SetmealDto;
 import com.jia.reggie.entity.Setmeal;
 
 import java.util.List;
 
+/**
+ * @author kk
+ */
 public interface SetmealService extends IService<Setmeal> {
-    public void saveWithDish(SetmealDTO setmealDTO);
+    void saveWithDish(SetmealDto setmealDTO);
 
-    public SetmealDTO getWithDish(Long id);
+    SetmealDto getWithDish(Long id);
 
-    public void updateWithDish(SetmealDTO setmealDTO);
+    void updateWithDish(SetmealDto setmealDTO);
 
-    public void deleteWithDish(List<Long> idss);
+    void deleteWithDish(List<Long> idss);
 }

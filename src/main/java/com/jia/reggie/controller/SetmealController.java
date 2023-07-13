@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jia.reggie.common.R;
-import com.jia.reggie.dto.SetmealDTO;
+import com.jia.reggie.dto.SetmealDto;
 import com.jia.reggie.entity.Setmeal;
 import com.jia.reggie.service.DishService;
 import com.jia.reggie.service.SetmealDishService;
@@ -29,7 +29,7 @@ public class SetmealController {
     private SetmealDishService setmealDishService;
 
     @PostMapping
-    public R<String> save(@RequestBody SetmealDTO setmealDTO) {
+    public R<String> save(@RequestBody SetmealDto setmealDTO) {
         setmealService.saveWithDish(setmealDTO);
         return R.success("新增套餐成功");
     }
@@ -52,13 +52,13 @@ public class SetmealController {
 
 
     @GetMapping("/{id}")
-    public R<SetmealDTO> get(@PathVariable Long id) {
-        SetmealDTO setmealDTO = setmealService.getWithDish(id);
+    public R<SetmealDto> get(@PathVariable Long id) {
+        SetmealDto setmealDTO = setmealService.getWithDish(id);
         return R.success(setmealDTO);
     }
 
     @PutMapping
-    public R<String> update(@RequestBody SetmealDTO setmealDTO) {
+    public R<String> update(@RequestBody SetmealDto setmealDTO) {
         setmealService.updateWithDish(setmealDTO);
         return R.success("更新成功");
     }

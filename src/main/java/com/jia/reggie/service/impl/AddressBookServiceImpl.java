@@ -6,6 +6,9 @@ import com.jia.reggie.mapper.AddressBookMapper;
 import com.jia.reggie.service.AddressBookService;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author kk
+ */
 @Service
 public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, AddressBook> implements AddressBookService {
 }

@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 
 /**
  * 套餐菜品关系
+ *
+ * @author kk
  */
 @Data
 public class SetmealDish implements Serializable {

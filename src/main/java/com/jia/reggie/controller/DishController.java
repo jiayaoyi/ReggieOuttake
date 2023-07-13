@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jia.reggie.common.R;
-import com.jia.reggie.dto.DishDTO;
+import com.jia.reggie.dto.DishDto;
 import com.jia.reggie.entity.Category;
 import com.jia.reggie.entity.Dish;
 import com.jia.reggie.service.CategoryService;
@@ -41,7 +41,7 @@ public class DishController {
      * @return 消息体
      */
     @PostMapping
-    public R<String> save(@RequestBody DishDTO dishDTO) {
+    public R<String> save(@RequestBody DishDto dishDTO) {
         dishService.saveWithFlavor(dishDTO);
         return R.success("新增菜品成功");
     }
@@ -49,16 +49,16 @@ public class DishController {
     @GetMapping("/page")
     public R<Page> page(int pageSize, int page, String name) {
         Page<Dish> pageInfo = new Page<>(page, pageSize);
-        Page<DishDTO> dishDTOPage = new Page<>();
+        Page<DishDto> dishDtoPage = new Page<>();
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(name != null, Dish::getName, name);
         queryWrapper.orderByDesc(Dish::getUpdateTime);
         dishService.page(pageInfo, queryWrapper);
-        BeanUtils.copyProperties(pageInfo, dishDTOPage, "records");
+        BeanUtils.copyProperties(pageInfo, dishDtoPage, "records");
 
         List<Dish> records = pageInfo.getRecords();
-        List<DishDTO> dishDTOList = records.stream().map(item -> {
-            DishDTO dishDTO = new DishDTO();
+        List<DishDto> dishDtoList = records.stream().map(item -> {
+            DishDto dishDTO = new DishDto();
             BeanUtils.copyProperties(item, dishDTO);
             Long categoryId = item.getCategoryId();
             Category category = categoryService.getById(categoryId);
@@ -66,18 +66,18 @@ public class DishController {
             return dishDTO;
         }).collect(Collectors.toList());
 
-        dishDTOPage.setRecords(dishDTOList);
-        return R.success(dishDTOPage);
+        dishDtoPage.setRecords(dishDtoList);
+        return R.success(dishDtoPage);
     }
 
     @GetMapping("/{id}")
-    public R<DishDTO> get(@PathVariable Long id) {
-        DishDTO dishDTO = dishService.getWithFlavor(id);
+    public R<DishDto> get(@PathVariable Long id) {
+        DishDto dishDTO = dishService.getWithFlavor(id);
         return R.success(dishDTO);
     }
 
     @PutMapping
-    public R<String> update(@RequestBody DishDTO dishDTO) {
+    public R<String> update(@RequestBody DishDto dishDTO) {
         dishService.updateWithFlavor(dishDTO);
         return R.success("修改菜品成功");
     }

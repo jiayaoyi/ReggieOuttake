@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * @author kk
+ */
 @WebFilter(filterName = "loginCheckFilter", urlPatterns = "/*")
 @Slf4j
 public class LoginCheckFilter implements Filter {
@@ -23,7 +26,7 @@ public class LoginCheckFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         log.info("拦截到请求:{}", request.getRequestURI());
-        String requestURL = request.getRequestURI();
+        String requestUrl = request.getRequestURI();
         String[] urls = new String[]{
                 "/employee/login",
                 "/employee/logout",
@@ -33,7 +36,7 @@ public class LoginCheckFilter implements Filter {
                 "/user/login"
         };
         //判断需要处理的请求
-        boolean check = check(urls, requestURL);
+        boolean check = check(urls, requestUrl);
         //不需要处理的请求直接放行
         if (check) {
             filterChain.doFilter(request, response);
@@ -61,13 +64,12 @@ public class LoginCheckFilter implements Filter {
 
         //输出流方式相应前后端数据
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
-        return;
     }
 
-    public Boolean check(String[] urls, String requestURL) {
+    public Boolean check(String[] urls, String requestUrl) {
         for (String url : urls) {
-            boolean match = PATH_MATCHER.match(url, requestURL);
-            if (match == true) {
+            boolean match = PATH_MATCHER.match(url, requestUrl);
+            if (match) {
                 return true;
             }
         }
