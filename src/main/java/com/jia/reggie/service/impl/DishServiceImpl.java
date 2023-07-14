@@ -21,7 +21,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
     @Autowired
     private DishFlavorService dishFlavorService;
-
+    @Override
     @Transactional
     public void saveWithFlavor(DishDto dishDTO) {
         //保存菜品基本信息到菜品表
@@ -37,6 +37,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         dishFlavorService.saveBatch(flavors);
     }
 
+    @Override
     public DishDto getWithFlavor(Long id) {
         Dish dish = this.getById(id);
         DishDto dishDTO = new DishDto();
@@ -48,6 +49,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         return dishDTO;
     }
 
+    @Override
     public void updateWithFlavor(DishDto dishDTO) {
         this.updateById(dishDTO);
         Long dishId = dishDTO.getId();

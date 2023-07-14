@@ -64,9 +64,10 @@
                     if (regex.test(this.form.phone)) {
                         this.msgFlag = false
                         //this.form.code = (Math.random()*1000000).toFixed(0)
-                        sendMsgApi({phone:this.form.phone})
+                        sendMsgApi({phone: this.form.phone})
+                        this.$notify({type: 'warning', message: '验证码发送成功'});
                     }else{
-                        this.msgFlag = true
+                        this.msgFlag = true;
                     }
                 },
                 async btnLogin(){

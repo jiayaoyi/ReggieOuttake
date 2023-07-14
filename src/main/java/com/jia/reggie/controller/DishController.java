@@ -7,6 +7,7 @@ import com.jia.reggie.common.R;
 import com.jia.reggie.dto.DishDto;
 import com.jia.reggie.entity.Category;
 import com.jia.reggie.entity.Dish;
+import com.jia.reggie.entity.DishFlavor;
 import com.jia.reggie.service.CategoryService;
 import com.jia.reggie.service.DishFlavorService;
 import com.jia.reggie.service.DishService;
@@ -114,13 +115,38 @@ public class DishController {
         return R.success("更新成功");
     }
 
+//    @GetMapping("/list")
+//    public R<List<Dish>> list(Dish dish) {
+//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper();
+//        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+//        queryWrapper.eq(Dish::getStatus, 1);
+//        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+//        List<Dish> dishList = dishService.list(queryWrapper);
+//        return R.success(dishList);
+//    }
+
     @GetMapping("/list")
-    public R<List<Dish>> list(Dish dish) {
-        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper();
+    public R<List<DishDto>> list(Dish dish) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
         queryWrapper.eq(Dish::getStatus, 1);
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
         List<Dish> dishList = dishService.list(queryWrapper);
-        return R.success(dishList);
+
+
+        List<DishDto> dishDtoList = dishList.stream().map(item -> {
+            DishDto dishDTO = new DishDto();
+            BeanUtils.copyProperties(item, dishDTO);
+            Long categoryId = item.getCategoryId();
+            Category category = categoryService.getById(categoryId);
+            dishDTO.setCategoryName(category.getName());
+            Long dishId = item.getId();
+            LambdaQueryWrapper<DishFlavor> dishFlavorQueryWrapper = new LambdaQueryWrapper<>();
+            dishFlavorQueryWrapper.eq(DishFlavor::getDishId, dishId);
+            List<DishFlavor> dishFlavorList = dishFlavorService.list(dishFlavorQueryWrapper);
+            dishDTO.setFlavors(dishFlavorList);
+            return dishDTO;
+        }).collect(Collectors.toList());
+        return R.success(dishDtoList);
     }
 }

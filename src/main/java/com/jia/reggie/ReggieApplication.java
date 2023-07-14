@@ -7,6 +7,8 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
+ * springboot启动类
+ *
  * @author kk
  */
 @SpringBootApplication

@@ -57,6 +57,7 @@ public class UserController {
                 newUser.setStatus(1);
                 userService.save(newUser);
                 session.setAttribute("user", newUser.getId());
+                return R.success(newUser);
             }
             session.setAttribute("user", user.getId());
             return R.success(user);
