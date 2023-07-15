@@ -10,6 +10,9 @@ import com.jia.reggie.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author kk
  */
@@ -32,10 +35,19 @@ public class OrderController {
      * @return
      */
     @GetMapping("/page")
-    public R<Page> page(int pageSize, int page, Long id) {
-        Page<Orders> ordersPage = new Page<>();
+    public R<Page> page(int pageSize, int page, Long id, @RequestParam(required = false) String number, @RequestParam(required = false) String beginTime, @RequestParam(required = false) String endTime) {
+        Page<Orders> ordersPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(id != null, Orders::getId, id);
+        if (number != null) {
+            queryWrapper.like(Orders::getId, number);
+        }
+        if (beginTime != null && endTime != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime begin = LocalDateTime.parse(beginTime, formatter);
+            LocalDateTime end = LocalDateTime.parse(endTime, formatter);
+            queryWrapper.between(Orders::getOrderTime, begin, end);
+        }
         queryWrapper.orderByDesc(Orders::getOrderTime);
         orderService.page(ordersPage, queryWrapper);
         return R.success(ordersPage);
@@ -44,8 +56,8 @@ public class OrderController {
     /**
      * 提交订单方法
      *
-     * @param orders
-     * @return
+     * @param orders 订单
+     * @return 消息
      */
     @PostMapping("/submit")
     public R<String> orderSubmit(@RequestBody Orders orders) {
@@ -53,6 +65,13 @@ public class OrderController {
         return R.success("下单成功");
     }
 
+    /**
+     * 用户页面查询订单信息
+     *
+     * @param page     页码
+     * @param pageSize 页面大小
+     * @return 消息
+     */
     @GetMapping("/userPage")
     public R<Page<Orders>> orderPage(int page, int pageSize) {
         Page<Orders> ordersPage = new Page<>(page, pageSize);
@@ -61,5 +80,11 @@ public class OrderController {
         queryWrapper.eq(Orders::getUserId, userId);
         orderService.page(ordersPage, queryWrapper);
         return R.success(ordersPage);
+    }
+
+    @PutMapping
+    public R<String> updateStatus(@RequestBody Orders orders) {
+        orderService.updateById(orders);
+        return R.success("更新状态成功");
     }
 }
