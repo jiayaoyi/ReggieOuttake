@@ -7,4 +7,6 @@ import com.jia.reggie.entity.Orders;
  * @author kk
  */
 public interface OrderService extends IService<Orders> {
+
+    public void submit(Orders orders);
 }
