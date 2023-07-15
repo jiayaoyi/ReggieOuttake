@@ -18,9 +18,10 @@ public class BaseContext {
 
     /**
      * 获取值
+     *
      * @return
      */
-    public static Long getCurrentId(){
+    public static Long getCurrentId() {
         return threadLocal.get();
     }
 }
