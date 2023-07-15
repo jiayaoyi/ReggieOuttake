@@ -82,9 +82,25 @@ public class OrderController {
         return R.success(ordersPage);
     }
 
+    /**
+     * @param orders
+     * @return
+     */
     @PutMapping
     public R<String> updateStatus(@RequestBody Orders orders) {
         orderService.updateById(orders);
         return R.success("更新状态成功");
+    }
+
+    @PostMapping("/again")
+    public R<String> again(@RequestBody Orders orders) {
+        Orders newOrder = orderService.getById(orders);
+        newOrder.setId(null);
+        newOrder.setCheckoutTime(LocalDateTime.now());
+        newOrder.setOrderTime(LocalDateTime.now());
+        newOrder.setStatus(2);
+
+        orderService.save(newOrder);
+        return R.success("再来一单成功");
     }
 }
