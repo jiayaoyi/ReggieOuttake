@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * @author kk
+ */
 @RestController
 @RequestMapping("/setmeal")
 @Slf4j
@@ -49,8 +52,7 @@ public class SetmealController {
         setmealService.deleteWithDish(ids);
         return R.success("删除成功");
     }
-
-
+    
     @GetMapping("/{id}")
     public R<SetmealDto> get(@PathVariable Long id) {
         SetmealDto setmealDTO = setmealService.getWithDish(id);
