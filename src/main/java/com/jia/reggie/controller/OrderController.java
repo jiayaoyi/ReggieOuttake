@@ -82,6 +82,10 @@ public class OrderController {
         return R.success(ordersPage);
     }
 
+    /**
+     * @param orders
+     * @return
+     */
     @PutMapping
     public R<String> updateStatus(@RequestBody Orders orders) {
         orderService.updateById(orders);
