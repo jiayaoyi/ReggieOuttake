@@ -7,6 +7,7 @@ import com.jia.reggie.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author kk
@@ -26,6 +28,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     @PostMapping("/sendMsg")
     public R<String> sendMsg(@RequestBody User user, HttpSession session) {
         String userPhone = user.getPhone();
@@ -36,7 +41,8 @@ public class UserController {
             String verifyCode = "1234";
             //验证
             //SMSUtils.sendMessage("瑞吉外卖","SMS_282785036",userPhone,verifyCode);
-            session.setAttribute(userPhone, verifyCode);
+            //session.setAttribute(userPhone, verifyCode);
+            redisTemplate.opsForValue().set(userPhone, verifyCode, 2, TimeUnit.MINUTES);
             return R.success("短信发送成功");
         }
         return R.error("短信发送失败");
@@ -46,7 +52,7 @@ public class UserController {
     public R<User> login(@RequestBody Map userLogin, HttpSession session) {
         String userPhone = userLogin.get("phone").toString();
         String code = userLogin.get("code").toString();
-        Object verifyCode = session.getAttribute(userPhone);
+        Object verifyCode = redisTemplate.opsForValue().get(userPhone);
         if (verifyCode != null && verifyCode.equals(code)) {
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getPhone, userPhone);
@@ -57,9 +63,11 @@ public class UserController {
                 newUser.setStatus(1);
                 userService.save(newUser);
                 session.setAttribute("user", newUser.getId());
+                redisTemplate.delete(userPhone);
                 return R.success(newUser);
             }
             session.setAttribute("user", user.getId());
+            redisTemplate.delete(userPhone);
             return R.success(user);
         } else {
             return R.error("手机号码或验证码错误，登录失败");
