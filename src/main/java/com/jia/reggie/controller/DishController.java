@@ -14,9 +14,11 @@ import com.jia.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,13 +29,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DishController {
     @Autowired
-    DishService dishService;
+    private DishService dishService;
 
     @Autowired
-    DishFlavorService dishFlavorService;
+    private DishFlavorService dishFlavorService;
 
     @Autowired
-    CategoryService categoryService;
+    private CategoryService categoryService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 新增菜品方法
@@ -115,26 +120,24 @@ public class DishController {
         return R.success("更新成功");
     }
 
-//    @GetMapping("/list")
-//    public R<List<Dish>> list(Dish dish) {
-//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper();
-//        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
-//        queryWrapper.eq(Dish::getStatus, 1);
-//        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
-//        List<Dish> dishList = dishService.list(queryWrapper);
-//        return R.success(dishList);
-//    }
-
     @GetMapping("/list")
     public R<List<DishDto>> list(Dish dish) {
+        List<DishDto> dishDtoList = null;
+        //动态构造key
+        String key = "dish" + dish.getCategoryId() + "_" + dish.getStatus();
+        //先从redis获取缓存数据
+        dishDtoList = (List<DishDto>) redisTemplate.opsForValue().get(key);
+        //如果存在直接返回
+        if (dishDtoList != null) {
+            return R.success(dishDtoList);
+        }
+        //如果不存在，查询数据库，将查询到的数据缓存到redis
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
         queryWrapper.eq(Dish::getStatus, 1);
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
         List<Dish> dishList = dishService.list(queryWrapper);
-
-
-        List<DishDto> dishDtoList = dishList.stream().map(item -> {
+        dishDtoList = dishList.stream().map(item -> {
             DishDto dishDTO = new DishDto();
             BeanUtils.copyProperties(item, dishDTO);
             Long categoryId = item.getCategoryId();
@@ -147,6 +150,7 @@ public class DishController {
             dishDTO.setFlavors(dishFlavorList);
             return dishDTO;
         }).collect(Collectors.toList());
+        redisTemplate.opsForValue().set(key, dishDtoList, 60, TimeUnit.MINUTES);
         return R.success(dishDtoList);
     }
 }

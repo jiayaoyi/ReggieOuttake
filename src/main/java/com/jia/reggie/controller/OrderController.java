@@ -4,21 +4,31 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jia.reggie.common.BaseContext;
 import com.jia.reggie.common.R;
+import com.jia.reggie.dto.OrdersDto;
+import com.jia.reggie.entity.OrderDetail;
 import com.jia.reggie.entity.Orders;
 import com.jia.reggie.service.OrderDetailService;
 import com.jia.reggie.service.OrderService;
+import com.jia.reggie.service.ShoppingCartService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author kk
  */
 @RestController
 @RequestMapping("/order")
+@Slf4j
 public class OrderController {
+    @Autowired
+    private ShoppingCartService shoppingCartService;
 
     @Autowired
     private OrderService orderService;
@@ -73,14 +83,31 @@ public class OrderController {
      * @return 消息
      */
     @GetMapping("/userPage")
-    public R<Page<Orders>> orderPage(int page, int pageSize) {
-        Page<Orders> ordersPage = new Page<>(page, pageSize);
+    public R<Page<OrdersDto>> orderPage(int page, int pageSize) {
+        Page<OrdersDto> ordersPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         Long userId = BaseContext.getCurrentId();
         queryWrapper.eq(Orders::getUserId, userId);
-        orderService.page(ordersPage, queryWrapper);
+        queryWrapper.orderByDesc(Orders::getOrderTime);
+        List<Orders> ordersList = orderService.list(queryWrapper);
+
+        List<OrdersDto> ordersDtoList = ordersList.stream().map((item) -> {
+            LambdaQueryWrapper<OrderDetail> orderDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderDetailLambdaQueryWrapper.eq(OrderDetail::getOrderId, item.getId());
+            List<OrderDetail> orderDetailList = orderDetailService.list(orderDetailLambdaQueryWrapper);
+
+            OrdersDto ordersDto = new OrdersDto();
+            BeanUtils.copyProperties(item, ordersDto);
+            ordersDto.setOrderDetails(orderDetailList);
+
+            return ordersDto;
+        }).collect(Collectors.toList());
+
+        ordersPage.setRecords(ordersDtoList);
+
         return R.success(ordersPage);
     }
+
 
     /**
      * @param orders
@@ -94,13 +121,31 @@ public class OrderController {
 
     @PostMapping("/again")
     public R<String> again(@RequestBody Orders orders) {
-        Orders newOrder = orderService.getById(orders);
+        Orders newOrder = orderService.getById(orders.getId()); // Retrieve the old order
+        LambdaQueryWrapper<OrderDetail> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(OrderDetail::getOrderId, orders.getId());
+        List<OrderDetail> oldOrderDetails = orderDetailService.list(queryWrapper);
+
         newOrder.setId(null);
         newOrder.setCheckoutTime(LocalDateTime.now());
         newOrder.setOrderTime(LocalDateTime.now());
         newOrder.setStatus(2);
 
-        orderService.save(newOrder);
+        orderService.saveOrUpdate(newOrder);
+
+
+        List<OrderDetail> newOrderDetails = oldOrderDetails.stream().map(oldDetail -> {
+            OrderDetail newDetail = new OrderDetail();
+            BeanUtils.copyProperties(oldDetail, newDetail);
+            newDetail.setId(null);
+            newDetail.setOrderId(newOrder.getId());
+            return newDetail;
+        }).collect(Collectors.toList());
+
+        orderDetailService.saveBatch(newOrderDetails);
+
         return R.success("再来一单成功");
     }
+
+
 }
