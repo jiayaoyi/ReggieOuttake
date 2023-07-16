@@ -14,11 +14,14 @@ import com.jia.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/dish")
 @Slf4j
+@EnableCaching
 public class DishController {
     @Autowired
     private DishService dishService;
@@ -40,6 +44,7 @@ public class DishController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+
     /**
      * 新增菜品方法
      *
@@ -47,6 +52,7 @@ public class DishController {
      * @return 消息体
      */
     @PostMapping
+    @CachePut(value = "dishCache", key = "#dishDTO.id")
     public R<String> save(@RequestBody DishDto dishDTO) {
         dishService.saveWithFlavor(dishDTO);
         return R.success("新增菜品成功");
@@ -83,8 +89,11 @@ public class DishController {
     }
 
     @PutMapping
+    @CacheEvict(value = "dish", allEntries = true)
     public R<String> update(@RequestBody DishDto dishDTO) {
         dishService.updateWithFlavor(dishDTO);
+        //清理菜品缓存数据
+
         return R.success("修改菜品成功");
     }
 
@@ -96,48 +105,48 @@ public class DishController {
      */
     @DeleteMapping
     public R<String> delete(@RequestParam List<Long> ids) {
-        ids.forEach(id -> {
-            LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Dish::getId, id);
-            dishService.remove(queryWrapper);
-        });
+        ids.forEach(id -> deleteSingle(id));
         return R.success("删除成功");
     }
 
+    @CacheEvict(value = "dish", allEntries = true)
+    public void deleteSingle(Long id) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Dish::getId, id);
+        dishService.remove(queryWrapper);
+    }
+
+
     /**
      * 更新菜品状态
-     * @param ids 更新菜品ID
+     *
+     * @param ids    更新菜品ID
      * @param status 菜品状态码
      * @return 消息返回体
      */
     @PostMapping("/status/{status}")
     public R<String> updateStatus(@RequestParam List<Long> ids, @PathVariable Integer status) {
-        ids.forEach(id -> {
-            LambdaUpdateWrapper<Dish> queryWrapper = new LambdaUpdateWrapper<>();
-            queryWrapper.eq(Dish::getId, id).set(Dish::getStatus, status);
-            dishService.update(queryWrapper);
-        });
+        ids.forEach(id -> updateSingleStatus(id, status));
         return R.success("更新成功");
     }
 
+    @CacheEvict(value = "dish", allEntries = true)
+    public void updateSingleStatus(Long id, Integer status) {
+        LambdaUpdateWrapper<Dish> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.eq(Dish::getId, id).set(Dish::getStatus, status);
+        dishService.update(queryWrapper);
+    }
+
+
     @GetMapping("/list")
+    @Cacheable(value = "dish", key = "#dish.categoryId + '_' + #dish.status")
     public R<List<DishDto>> list(Dish dish) {
-        List<DishDto> dishDtoList = null;
-        //动态构造key
-        String key = "dish" + dish.getCategoryId() + "_" + dish.getStatus();
-        //先从redis获取缓存数据
-        dishDtoList = (List<DishDto>) redisTemplate.opsForValue().get(key);
-        //如果存在直接返回
-        if (dishDtoList != null) {
-            return R.success(dishDtoList);
-        }
-        //如果不存在，查询数据库，将查询到的数据缓存到redis
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
         queryWrapper.eq(Dish::getStatus, 1);
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
         List<Dish> dishList = dishService.list(queryWrapper);
-        dishDtoList = dishList.stream().map(item -> {
+        List<DishDto> dishDtoList = dishList.stream().map(item -> {
             DishDto dishDTO = new DishDto();
             BeanUtils.copyProperties(item, dishDTO);
             Long categoryId = item.getCategoryId();
@@ -150,7 +159,7 @@ public class DishController {
             dishDTO.setFlavors(dishFlavorList);
             return dishDTO;
         }).collect(Collectors.toList());
-        redisTemplate.opsForValue().set(key, dishDtoList, 60, TimeUnit.MINUTES);
         return R.success(dishDtoList);
     }
+
 }

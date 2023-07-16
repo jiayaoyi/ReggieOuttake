@@ -6,14 +6,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jia.reggie.common.R;
 import com.jia.reggie.dto.SetmealDto;
 import com.jia.reggie.entity.Setmeal;
-import com.jia.reggie.service.DishService;
-import com.jia.reggie.service.SetmealDishService;
 import com.jia.reggie.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author kk
@@ -26,10 +26,7 @@ public class SetmealController {
     private SetmealService setmealService;
 
     @Autowired
-    private DishService dishService;
-
-    @Autowired
-    private SetmealDishService setmealDishService;
+    private RedisTemplate redisTemplate;
 
     @PostMapping
     public R<String> save(@RequestBody SetmealDto setmealDTO) {
@@ -78,13 +75,19 @@ public class SetmealController {
 
     @GetMapping("/list")
     public R<List<Setmeal>> list(Setmeal setmeal) {
+        List<Setmeal> setmealList = null;
+        String key = "setmeal" + setmeal.getCategoryId() + "_" + setmeal.getStatus();
+        setmealList = (List<Setmeal>) redisTemplate.opsForValue().get(key);
+        if (setmealList != null) {
+            return R.success(setmealList);
+        }
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId());
         queryWrapper.eq(setmeal.getStatus() != null, Setmeal::getStatus, setmeal.getStatus());
         queryWrapper.orderByDesc(Setmeal::getUpdateTime);
 
         List<Setmeal> list = setmealService.list(queryWrapper);
-
+        redisTemplate.opsForValue().set(key, list, 60, TimeUnit.MINUTES);
         return R.success(list);
     }
 
