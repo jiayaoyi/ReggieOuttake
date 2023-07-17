@@ -59,6 +59,7 @@ public class DishController {
     }
 
     @GetMapping("/page")
+    @Cacheable(value = "dishCache", key = "#page + '_' + #pageSize + (name == null ? '' : '_' + #name)")
     public R<Page> page(int pageSize, int page, String name) {
         Page<Dish> pageInfo = new Page<>(page, pageSize);
         Page<DishDto> dishDtoPage = new Page<>();
@@ -83,13 +84,14 @@ public class DishController {
     }
 
     @GetMapping("/{id}")
+    @Cacheable(value = "dishCache", key = "#id")
     public R<DishDto> get(@PathVariable Long id) {
         DishDto dishDTO = dishService.getWithFlavor(id);
         return R.success(dishDTO);
     }
 
     @PutMapping
-    @CacheEvict(value = "dish", allEntries = true)
+    @CacheEvict(value = "dishCache", allEntries = true)
     public R<String> update(@RequestBody DishDto dishDTO) {
         dishService.updateWithFlavor(dishDTO);
         //清理菜品缓存数据
@@ -104,13 +106,14 @@ public class DishController {
      * @return 消息体
      */
     @DeleteMapping
+    @CacheEvict(value = "dishCache", allEntries = true)
     public R<String> delete(@RequestParam List<Long> ids) {
         ids.forEach(id -> deleteSingle(id));
         return R.success("删除成功");
     }
 
-    @CacheEvict(value = "dish", allEntries = true)
-    public void deleteSingle(Long id) {
+    @CacheEvict(value = "dishCache", allEntries = true)
+    private void deleteSingle(Long id) {
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Dish::getId, id);
         dishService.remove(queryWrapper);
@@ -125,13 +128,14 @@ public class DishController {
      * @return 消息返回体
      */
     @PostMapping("/status/{status}")
+    @CacheEvict(value = "dishCache", allEntries = true)
     public R<String> updateStatus(@RequestParam List<Long> ids, @PathVariable Integer status) {
         ids.forEach(id -> updateSingleStatus(id, status));
         return R.success("更新成功");
     }
 
-    @CacheEvict(value = "dish", allEntries = true)
-    public void updateSingleStatus(Long id, Integer status) {
+    @CacheEvict(value = "dishCache", allEntries = true)
+    private void updateSingleStatus(Long id, Integer status) {
         LambdaUpdateWrapper<Dish> queryWrapper = new LambdaUpdateWrapper<>();
         queryWrapper.eq(Dish::getId, id).set(Dish::getStatus, status);
         dishService.update(queryWrapper);
@@ -139,7 +143,7 @@ public class DishController {
 
 
     @GetMapping("/list")
-    @Cacheable(value = "dish", key = "#dish.categoryId + '_' + #dish.status")
+    @Cacheable(value = "dishCache", key = "'list:' + #dish.categoryId + '_' + #dish.status")
     public R<List<DishDto>> list(Dish dish) {
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());

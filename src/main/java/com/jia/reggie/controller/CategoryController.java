@@ -7,6 +7,9 @@ import com.jia.reggie.entity.Category;
 import com.jia.reggie.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +34,7 @@ public class CategoryController {
      * @return 1为成功
      */
     @PostMapping
+    @CachePut(value = "categoryCache", key = "#category.id")
     public R<String> save(@RequestBody Category category) {
         categoryService.save(category);
         return R.success("新增分类成功");
@@ -56,10 +60,10 @@ public class CategoryController {
      * @return 消息体
      */
     @DeleteMapping
+    @CacheEvict(value = "categoryCache", key = "#ids")
     public R<String> delete(Long ids) {
         log.info("删除分类，id为{}", ids);
-//        categoryService.removeById(ids);
-        categoryService.remove(ids);
+        categoryService.removeById(ids);
         return R.success("分类删除成功");
     }
 
@@ -70,6 +74,7 @@ public class CategoryController {
      * @return 消息体
      */
     @PutMapping
+    @CachePut(value = "categoryCache", key = "#category.id")
     public R<String> update(@RequestBody Category category) {
         categoryService.updateById(category);
         return R.success("修改分类信息成功");
@@ -82,6 +87,7 @@ public class CategoryController {
      * @return 消息体
      */
     @GetMapping("/list")
+    @Cacheable(value = "categoryCache", key = "'list:' + #category.type")
     public R<List<Category>> list(Category category) {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(category.getType() != null, Category::getType, category.getType());
