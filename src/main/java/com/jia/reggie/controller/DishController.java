@@ -96,13 +96,24 @@ public class DishController {
      */
     @DeleteMapping
     public R<String> delete(@RequestParam List<Long> ids) {
+
+        for (Long id : ids) {
+            Dish dish = dishService.getById(id);
+            if (dish.getStatus().equals(1)) {
+                return R.error("菜品正在出售中，无法删除");
+            }
+        }
+
+        // 执行删除操作
         ids.forEach(id -> {
             LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Dish::getId, id);
             dishService.remove(queryWrapper);
         });
+
         return R.success("删除成功");
     }
+
 
     /**
      * 更新菜品状态
